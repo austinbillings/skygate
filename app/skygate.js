@@ -37,6 +37,7 @@ const skygate = function (config) {
   //-===========================================================================
   
   app.fail = (req, res, info, ...loggables) => {
+    let ip = app.getIpAddress(req);
     info = _.defaults(info, {
       message: Lex.GenericError,
       success: false,
@@ -44,9 +45,9 @@ const skygate = function (config) {
       code: 400
     });
     app.updateToken();
-  	res.status(info.code).send(info);
-    zaq.err(info.message, info);
-  	if (loggables) _.each(loggables, zaq.obj);
+    res.status(info.code).send(info);
+    zaq.err(info.message, `IP: ${ip}`);
+    if (loggables) _.each(loggables, zaq.obj);
   }
   
   app.warn = (req, warning) => {
@@ -156,7 +157,7 @@ const skygate = function (config) {
   
   //-===========================================================================
   
-  app.userInspection = (input) => {
+  app.attemptAuthentication = (input) => {
     return new Promise(function (resolve, reject) {
       let { id, pass, email } = input;
       
@@ -186,10 +187,12 @@ const skygate = function (config) {
   
   app.checkUserPassword = (candidatePass, user) => {
     let { salt, pass } = user;
+    
     let hash = crypto.createHash(config.algo)
       .update(candidatePass)
       .update(salt)
       .digest('hex');
+      
     return hash === pass;
   }
   
@@ -217,7 +220,7 @@ const skygate = function (config) {
   }
   
   app.logout = (req, res) => {
-    if (app.isLoggedIn(req)) app.killSession(app.getToken(req));
+    app.killSession(app.getToken(req));
     app.updateToken();
     app.echoStatus(req, res);
   }
