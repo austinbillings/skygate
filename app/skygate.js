@@ -187,12 +187,10 @@ const skygate = function (config) {
   
   app.checkUserPassword = (candidatePass, user) => {
     let { salt, pass } = user;
-    
     let hash = crypto.createHash(config.algo)
       .update(candidatePass)
       .update(salt)
       .digest('hex');
-      
     return hash === pass;
   }
   
@@ -206,7 +204,7 @@ const skygate = function (config) {
     if (app.isLoggedIn(req)) {
       let message = Lex.AlreadyLoggedIn;
       let code = 409;
-      app.fail(req, res, { message, code });
+      return app.fail(req, res, { message, code });
     }
     if (req.authAttempts >= config.maxAttempts) {
       let message = Lex.MaxAttemptsReached;

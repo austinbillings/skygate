@@ -1,12 +1,6 @@
-<grid wrap class="central">
-  <box xs:12 sm:9>
-    <section>
-      <h1>Welcome to <span class="strike caps sans-alt w600">SkyGate</span>.</h1>
-      <h3>Login below to access your account.</h3>
-    </section>
-    <form class="login-form" ng-controller="loginController as vm" ng-include="template('login')"></form>
-  </box>
-  <img src="assets/logo-black.svg" sm:3 class="o2 xs-hide" />
+<grid class="central stack">
+  <row wrap ng-if="!skygate.loggedIn()" ng-include="view('login')"></row>
+  <row wrap ng-if="skygate.loggedIn()" ng-include="view('account')"></row>
 </grid>
 
 <footer ng-include="partial('footer')"></footer>

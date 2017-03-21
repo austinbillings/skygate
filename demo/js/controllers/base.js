@@ -1,5 +1,5 @@
 angular.module('skygate-demo')
-.controller('base', ['$scope', '$rootScope', '$http', '$log', '$sce', 'NorthEast', 'Robin', 'Ringo', function ($scope, $rootScope, $http, $log, $sce, NorthEast, Robin, Ringo) {
+.controller('base', ['$scope', '$rootScope', '$http', '$log', '$sce', 'NorthEast', 'Robin', 'Ringo', 'SkygateService', function ($scope, $rootScope, $http, $log, $sce, NorthEast, Robin, Ringo, SkygateService) {
   // Site skinnin'
   Ringo.initialize({
     thickness: 5,
@@ -14,6 +14,7 @@ angular.module('skygate-demo')
   // boring stuff
   $scope.ne = NorthEast;
   $scope.robin = Robin;
+  $scope.skygate = SkygateService;
   $scope.ui = {
     viewPrefix: ''
   };

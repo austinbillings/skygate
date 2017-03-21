@@ -1,7 +1,7 @@
 angular.module('skygate-demo', ['ngAnimate', 'Hookup', 'Ringo', 'Robin', 'NE']);
 
 angular.module('skygate-demo')
-.controller('base', ['$scope', '$rootScope', '$http', '$log', '$sce', 'NorthEast', 'Robin', 'Ringo', function ($scope, $rootScope, $http, $log, $sce, NorthEast, Robin, Ringo) {
+.controller('base', ['$scope', '$rootScope', '$http', '$log', '$sce', 'NorthEast', 'Robin', 'Ringo', 'SkygateService', function ($scope, $rootScope, $http, $log, $sce, NorthEast, Robin, Ringo, SkygateService) {
   // Site skinnin'
   Ringo.initialize({
     thickness: 5,
@@ -16,6 +16,7 @@ angular.module('skygate-demo')
   // boring stuff
   $scope.ne = NorthEast;
   $scope.robin = Robin;
+  $scope.skygate = SkygateService;
   $scope.ui = {
     viewPrefix: ''
   };
@@ -50,42 +51,65 @@ angular.module('skygate-demo')
 
 angular.module('skygate-demo').controller('loginController', function ($scope, $http, $timeout, Robin, Ringo, SkygateService) {
   let vm = this;
+  vm.skygate = SkygateService
   vm.live = {
     id: null,
     pass: null,
     email: null
   }
   vm.submit = function () {
-    SkygateService.actions.createSession(vm.live);
+    SkygateService.actions.login(vm.live);
   }
 });
 angular.module('skygate-demo').service('SkygateService', function (Robin, $http) {
   const endpoint = '/session';
+  const service = {};
   
-  let user = null;
-  
-  let errHandler = (err) => {
+  service.user = {};
+
+  service.loggedIn = () => {
+    return service.user.id && service.user.email;
+  }
+
+  errHandler = (err) => {
     Robin.loading(false);
     let message = err.data && err.data.message ? err.data.message : err.message ? err.message : err.messageText ? err.messageText : 'A thing went wrong dude.';
-    Robin.notify(message, { kind: 'warning'});
+    Robin.alert(message, { kind: 'warning', duration: 100 });
     console.log(err);
   }
   
-  let actions = {
-    createSession (input) {
-      Robin.loading(true);
-      $http.post(endpoint, input)
-        .then((res) => {
-          Robin.loading(false);
-          Robin.alert('Nice!');
-          console.log(res.data);
-        })
-        .catch((e) => errHandler(e));
-    }
-  };
+  service.actions = {};
   
-  return {
-    endpoint,
-    actions
+  service.actions.login = (input) => {
+    Robin.loading(true);
+    $http.post(endpoint, input)
+      .then(res => {
+        Robin.loading(false);
+        service.user = res.data.user;
+      })
+      .catch(e => errHandler(e));
   }
+  
+  service.actions.refresh = () => {
+    $http.get(endpoint)
+      .then(res => {
+        service.user = res.data.user;
+      })
+      .catch(e => errHandler(e));
+  }
+  
+  service.actions.logout = () => {
+    Robin.loading(true);
+    $http.delete(endpoint)
+      .then(res => {
+        Robin.loading(false);
+        Robin.alert('Successfully logged out.');
+        service.user = res.data.user;
+      })
+      .catch(e => errHandler(e));
+  }
+  
+  service.actions.refresh();
+  
+  return service;
 });
