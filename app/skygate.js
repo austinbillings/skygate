@@ -20,9 +20,9 @@ const skygate = function (config) {
     exposableUserKeys: ['id', 'email'],
     tests: {
       id: /^[a-zA-Z0-9_-]{3,40}$/,
-			name: /^[a-zA-Z ]{1,40}$/,
+      name: /^[a-zA-Z ]{1,40}$/,
       email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-			pass: /^[a-zA-Z0-9!@#`~%^&?_-]{10,36}$/
+      pass: /^[a-zA-Z0-9!@#`~%^&?_-]{10,36}$/
     }
   });
   
