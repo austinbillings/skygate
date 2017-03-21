@@ -11,5 +11,28 @@
     "express": "^4.15.2",
     "node-uuid": "^1.4.7",
     "zaq": "^1.0.3"
-  }
+  },
+  "name": "skygate",
+  "description": "One-step auth layer for Express-based Node apps.",
+  "version": "0.1.0",
+  "main": "./app/skygate.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/austinbillings/skygate.git"
+  },
+  "keywords": [
+    "authentication",
+    "layerware",
+    "auth",
+    "sessions"
+  ],
+  "author": "Austin Billings <ab@austinbillings.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/austinbillings/skygate/issues"
+  },
+  "homepage": "https://github.com/austinbillings/skygate#readme"
 }
