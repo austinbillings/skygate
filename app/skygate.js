@@ -1,6 +1,8 @@
 const zaq = require('zaq');
+const chalk = require('chalk');
 const _ = require('underscore');
 const uid = require('node-uuid');
+const moment = require('moment');
 const crypto = require('crypto');
 const jawn = require('node-jawn');
 const express = require('express');
@@ -134,24 +136,40 @@ const skygate = function (config) {
     next && next();
   }
   
+  app.logSessionList = () => {
+    let sessions = app.live.sessions;
+    let prefix = chalk.dim.blue(' → :::::  ');
+    let table = _.map(sessions, (s) => {
+      let token = s.token.substr(0, 8) + '...';
+      let time = moment(s.start).format('h:mm:ss');
+      return `${prefix}${chalk.dim.cyan(time)} ${chalk.blue.bold(s.user.id)} ${chalk.dim('from')} ${chalk.yellow(s.ip)} ${chalk.dim('with')} ${chalk.dim.green.bold(token)}`;
+    });
+    
+    zaq.info(`Current Sessions (${app.live.sessions.length})`);
+    zaq.log(table.join('\n'));
+  }
+  
   app.newSession = (req, res, rawUser) => {
     let token = uid.v4();
     let success = true;
     let maxAge = config.maxAge;
     let ip = app.getIpAddress(req);
     let user = app.vetUser(rawUser);
+    let start = (new Date).getTime();
     
-    let payload = { user, ip, success };
-    let session = { user, ip, token };
+    let payload = { user, ip, start, success };
+    let session = { user, ip, start, token };
     
     app.live.sessions.push(session);
-    zaq.win('Session started', token);
-    zaq.info('Current sessions', app.live.sessions);
+    zaq.win(`Session started: ${chalk.dim(token)}`);
+    app.logSessionList();
     res.cookie(config.cookieName, token, { maxAge });
     res.send(payload);
   }
   
   app.killSession = (token) => {
+    zaq.win(`Session killed: ${chalk.dim(token)}`);
+    app.logSessionList();
     app.live.sessions = _.reject(app.live.sessions, { token });
   }
   
@@ -167,10 +185,12 @@ const skygate = function (config) {
       switch (config.mode) {
         case 'id': 
           if (!_.isString(id)) reject(Lex.NoUserId);
+          id = id.toLowerCase();
           match = { id };
           break;
         case 'email':
           if (!_.isString(email)) reject(Lex.NoEmail);
+          email = email.toLowerCase()
           match = { email };
           break;
       }
@@ -178,7 +198,8 @@ const skygate = function (config) {
       if (!_.isString(pass)) reject(Lex.NoPass);
       
       let user = _.findWhere(app.users, match);
-      if (!user) reject(Lex.BadUserOrPass);
+      if (!_.isObject(user)) reject(Lex.BadUserOrPass);
+      
       if (!app.checkUserPassword(pass, user)) reject(Lex.BadUserOrPass);
       
       resolve(user);

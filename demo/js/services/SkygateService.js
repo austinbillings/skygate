@@ -17,7 +17,7 @@ angular.module('skygate-demo').service('SkygateService', function (Robin, $http)
   
   service.actions = {};
   
-  service.actions.login = (input) => {
+  service.login = (input) => {
     Robin.loading(true);
     $http.post(endpoint, input)
       .then(res => {
@@ -27,7 +27,7 @@ angular.module('skygate-demo').service('SkygateService', function (Robin, $http)
       .catch(e => errHandler(e));
   }
   
-  service.actions.refresh = () => {
+  service.refresh = () => {
     $http.get(endpoint)
       .then(res => {
         service.user = res.data.user;
@@ -35,7 +35,7 @@ angular.module('skygate-demo').service('SkygateService', function (Robin, $http)
       .catch(e => errHandler(e));
   }
   
-  service.actions.logout = () => {
+  service.logout = () => {
     Robin.loading(true);
     $http.delete(endpoint)
       .then(res => {
@@ -46,7 +46,7 @@ angular.module('skygate-demo').service('SkygateService', function (Robin, $http)
       .catch(e => errHandler(e));
   }
   
-  service.actions.refresh();
+  service.refresh();
   
   return service;
 });

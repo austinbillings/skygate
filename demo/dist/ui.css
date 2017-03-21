@@ -20,7 +20,7 @@
 .black-glow, form input:focus {
   box-shadow: 0px 0px 20px rgba(16, 16, 16, 0.2); }
 
-.white, body, button, .bottom-bar a {
+.white, body, button, form input, .bottom-bar a {
   color: #f3f3f3; }
 
 .white-border {
@@ -83,7 +83,7 @@
 .grey-glow {
   box-shadow: 0px 0px 20px rgba(77, 77, 77, 0.2); }
 
-.teal, a, form input {
+.teal, a {
   color: #099490; }
 
 .teal-border, button:hover {
@@ -177,7 +177,7 @@ robin p {
 .black-glow, form input:focus {
   box-shadow: 0px 0px 20px rgba(16, 16, 16, 0.2); }
 
-.white, body, button, .bottom-bar a {
+.white, body, button, form input, .bottom-bar a {
   color: #f3f3f3; }
 
 .white-border {
@@ -240,7 +240,7 @@ robin p {
 .grey-glow {
   box-shadow: 0px 0px 20px rgba(77, 77, 77, 0.2); }
 
-.teal, a, form input {
+.teal, a {
   color: #099490; }
 
 .teal-border, button:hover {
