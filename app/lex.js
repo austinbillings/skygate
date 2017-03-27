@@ -12,4 +12,4 @@ module.exports = {
   NoName: 'No name provided.',
   NoPass: 'No password provided.',
   BadUserOrPass: 'Incorrect username or password given.'
-}
+};

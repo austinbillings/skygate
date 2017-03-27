@@ -10,6 +10,9 @@
     "type": "git",
     "url": "git+https://github.com/austinbillings/skygate.git"
   },
+  "jshintConfig": {
+    "esversion": 6
+  },
   "keywords": [
     "authentication",
     "layerware",

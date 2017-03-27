@@ -34,7 +34,7 @@ const skygate = function (config) {
       sessions: [],
       attempts: {}
     }
-  }
+  };
   
   //-===========================================================================
   
@@ -50,61 +50,62 @@ const skygate = function (config) {
     res.status(info.code).send(info);
     zaq.err(info.message, `IP: ${ip}`);
     if (loggables) _.each(loggables, zaq.obj);
-  }
+  };
   
   app.warn = (req, warning) => {
     if (!req.warnings || !req.warnings.length) req.warnings = [];
     req.warnings.push(warning);
-  }
+  };
   
   //-===========================================================================
   // Getters
   
   app.getIpAddress = (req) => {
     return req ? req.headers['x-forwarded-for'] || req.connection.remoteAddress : null;
-  }
+  };
   
   app.getToken = (req) => {
-    return req && req.cookies && req.cookies[config.cookieName] ? req.cookies[config.cookieName] : false;
-  }
+    return req && req.signedCookies && req.signedCookies[config.cookieName] ? req.signedCookies[config.cookieName] : false;
+  };
   
   app.getSession = (token) => {
-    return _.findWhere(app.live.sessions, { token })
-  }
+    return _.findWhere(app.live.sessions, { token });
+  };
   
   app.getUserById = (id) => {
     return _.findWhere(app.users, { id });
-  }
+  };
   
   app.getUserByToken = (token) => {
     let session = app.getSession(token);
     return (session && session.user && session.user.id) ? app.getUserById(session.user.id) : null;
-  }
+  };
   
   app.getUser = (req) => {
     if (!app.isLoggedIn(req)) return null;
     return app.getUserByToken(app.getToken(req));
-  }
+  };
   
   app.vetUser = (user) => {
     return _.pick(user, ...config.exposableUserKeys);
-  }
+  };
   
   //-===========================================================================
   // Status
   
   app.isLoggedIn = (req) => {
     let token = app.getToken(req);
+    zaq.info('isLoggedIn: got token '+ token);
     let session = app.getSession(token);
     return (token && session ? true : false);
-  }
+  };
   
   app.echoStatus = (req, res) => {
     res.send({
       loggedIn: app.isLoggedIn(req),
       user: app.vetUser(app.getUser(req))
     });
-  }
+  };
   
   //-===========================================================================
   // Middleware
@@ -114,7 +115,7 @@ const skygate = function (config) {
     let token = app.getToken(req);
     let message = Lex.Unauthorized;
     return app.isLoggedIn(req) ? next() : app.fail(req, res, { code, token, message });
-  }
+  };
   
   app.registerAuthAttempt = (req, res, next) => {
     let ip = app.getIpAddress(req);
@@ -122,7 +123,7 @@ const skygate = function (config) {
     
     req.authAttempts = app.live.attempts[ip] = count + 1;
     next();
-  }
+  };
   
   app.updateToken = (req, res, next) => {
     let maxAge = config.maxAge;
@@ -132,9 +133,9 @@ const skygate = function (config) {
     let session = app.getSession(token);
     if (!session) maxAge = 1;
     
-    res.cookie(config.cookieName, token, { maxAge });
-    next && next();
-  }
+    res.cookie(config.cookieName, token, { maxAge, signed: true });
+    if (next) next();
+  };
   
   app.logSessionList = () => {
     let sessions = app.live.sessions;
@@ -147,7 +148,7 @@ const skygate = function (config) {
     
     zaq.info(`Current Sessions (${app.live.sessions.length})`);
     zaq.log(table.join('\n'));
-  }
+  };
   
   app.newSession = (req, res, rawUser) => {
     let token = uid.v4();
@@ -155,7 +156,7 @@ const skygate = function (config) {
     let maxAge = config.maxAge;
     let ip = app.getIpAddress(req);
     let user = app.vetUser(rawUser);
-    let start = (new Date).getTime();
+    let start = (new Date()).getTime();
     
     let payload = { user, ip, start, success };
     let session = { user, ip, start, token };
@@ -163,15 +164,15 @@ const skygate = function (config) {
     app.live.sessions.push(session);
     zaq.win(`Session started: ${chalk.dim(token)}`);
     app.logSessionList();
-    res.cookie(config.cookieName, token, { maxAge });
+    res.cookie(config.cookieName, token, { maxAge, signed: true });
     res.send(payload);
-  }
+  };
   
   app.killSession = (token) => {
     zaq.win(`Session killed: ${chalk.dim(token)}`);
     app.logSessionList();
     app.live.sessions = _.reject(app.live.sessions, { token });
-  }
+  };
   
   //-===========================================================================
   
@@ -190,7 +191,7 @@ const skygate = function (config) {
           break;
         case 'email':
           if (!_.isString(email)) reject(Lex.NoEmail);
-          email = email.toLowerCase()
+          email = email.toLowerCase();
           match = { email };
           break;
       }
@@ -204,7 +205,7 @@ const skygate = function (config) {
       
       resolve(user);
     });
-  }
+  };
   
   app.checkUserPassword = (candidatePass, user) => {
     let { salt, pass } = user;
@@ -213,11 +214,11 @@ const skygate = function (config) {
       .update(salt)
       .digest('hex');
     return hash === pass;
-  }
+  };
   
   app.generateSalt = () => {
     return crypto.randomBytes(16).toString('hex');
-  }
+  };
   
   //-===========================================================================
   
@@ -236,20 +237,21 @@ const skygate = function (config) {
       user => app.newSession(req, res, user), 
       err => app.fail(req, res, { message: err })
     );
-  }
+  };
   
   app.logout = (req, res) => {
     app.killSession(app.getToken(req));
     app.updateToken();
     app.echoStatus(req, res);
-  }
+  };
   
   //-===========================================================================
   
   app.mount = (endpoint = '/') => {
     let router = new express.Router();
+    let secret = crypto.randomBytes(32).toString('hex');
     
-    router.use(cookieParser());
+    router.use(cookieParser(secret));
     router.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
     router.use(bodyParser.json({ limit: '50mb' }));
     
@@ -258,9 +260,9 @@ const skygate = function (config) {
     router.delete(endpoint, (req, res) => app.logout(req, res));
     
     return router;
-  }
+  };
   
   return app;
-}
+};
 
 module.exports = skygate;

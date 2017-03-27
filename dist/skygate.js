@@ -109,7 +109,7 @@ var skygate = function skygate(config) {
   };
 
   app.getToken = function (req) {
-    return req && req.cookies && req.cookies[config.cookieName] ? req.cookies[config.cookieName] : false;
+    return req && req.signedCookies && req.signedCookies[config.cookieName] ? req.signedCookies[config.cookieName] : false;
   };
 
   app.getSession = function (token) {
@@ -139,6 +139,7 @@ var skygate = function skygate(config) {
 
   app.isLoggedIn = function (req) {
     var token = app.getToken(req);
+    zaq.info('isLoggedIn: got token ' + token);
     var session = app.getSession(token);
     return token && session ? true : false;
   };
@@ -176,8 +177,8 @@ var skygate = function skygate(config) {
     var session = app.getSession(token);
     if (!session) maxAge = 1;
 
-    res.cookie(config.cookieName, token, { maxAge: maxAge });
-    next && next();
+    res.cookie(config.cookieName, token, { maxAge: maxAge, signed: true });
+    if (next) next();
   };
 
   app.logSessionList = function () {
@@ -207,7 +208,7 @@ var skygate = function skygate(config) {
     app.live.sessions.push(session);
     zaq.win('Session started: ' + chalk.dim(token));
     app.logSessionList();
-    res.cookie(config.cookieName, token, { maxAge: maxAge });
+    res.cookie(config.cookieName, token, { maxAge: maxAge, signed: true });
     res.send(payload);
   };
 
@@ -297,8 +298,9 @@ var skygate = function skygate(config) {
     var endpoint = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '/';
 
     var router = new express.Router();
+    var secret = crypto.randomBytes(32).toString('hex');
 
-    router.use(cookieParser());
+    router.use(cookieParser(secret));
     router.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
     router.use(bodyParser.json({ limit: '50mb' }));
 
