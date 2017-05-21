@@ -11,8 +11,8 @@ const cookieParser = require('cookie-parser');
 
 const Lex = require('./lex.js');
 
-const skygate = function (config) {
-  config = _.defaults(config, {
+const skygate = function (config = {}) {
+  config = jawn.merge(config, {
     users: null,
     mode: 'id',    
     algo: 'sha256',
@@ -153,7 +153,7 @@ const skygate = function (config) {
   app.newSession = (req, res, rawUser) => {
     let token = uid.v4();
     let success = true;
-    let maxAge = config.maxAge;
+    let { cookieName, maxAge } = config;
     let ip = app.getIpAddress(req);
     let user = app.vetUser(rawUser);
     let start = (new Date()).getTime();
