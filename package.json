@@ -1,10 +1,11 @@
 {
   "name": "skygate",
-  "description": "One-step auth layer for Express-based Node apps.",
-  "version": "1.0.0",
-  "main": "./app/skygate.js",
+  "description": "All-In-One Authentication For Mongo+Express Apps.",
+  "version": "2.0.0",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:app": "node index.js",
+    "start": "npm run start:app"
   },
   "repository": {
     "type": "git",
@@ -13,25 +14,11 @@
   "jshintConfig": {
     "esversion": 6
   },
-  "keywords": [
-    "authentication",
-    "layerware",
-    "auth",
-    "sessions"
-  ],
-  "author": "Austin Billings <ab@austinbillings.com>",
+  "keywords": [ "authentication", "layerware", "auth", "sessions" ],
+  "author": "Austin Billings <me@austinbillings.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/austinbillings/skygate/issues"
-  },
+  "bugs": { "url": "https://github.com/austinbillings/skygate/issues" },
   "homepage": "https://github.com/austinbillings/skygate#readme",
-  "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2",
-    "gulp-concat": "^2.6.1",
-    "gulp-uglify": "^2.1.0",
-    "zaq": "^1.0.3"
-  },
   "dependencies": {
     "body-parser": "^1.17.1",
     "cookie-parser": "^1.4.3",

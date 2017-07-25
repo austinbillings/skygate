@@ -1,9 +1,0 @@
-@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,300i,400,400i,600,700,700i,900');
-@import url('https://fonts.googleapis.com/css?family=Yantramanav:100,300,400,500,700,900');
-// @import url('https://fonts.googleapis.com/css?family=Montserrat:100,100i,200,300,400,400i,500,600,700,800i,900');
-
-$sans: 'Source Sans Pro', Helvetica;
-$alternate: 'Yantramanav', $sans;
-
-.sans { font-family: $sans; }
-.sans-alt { font-family: $alternate; }

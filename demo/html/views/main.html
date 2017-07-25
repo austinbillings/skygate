@@ -1,6 +1,0 @@
-<grid class="central stack">
-  <row wrap ng-if="!skygate.loggedIn()" ng-include="view('login')"></row>
-  <row wrap ng-if="skygate.loggedIn()" ng-include="view('account')"></row>
-</grid>
-
-<footer ng-include="partial('footer')"></footer>
