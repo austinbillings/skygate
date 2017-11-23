@@ -3,6 +3,9 @@
   "description": "All-In-One Authentication For Mongo+Express Apps.",
   "version": "2.0.0",
   "main": "index.js",
+  "engines": {
+    "node": ">= 7.6.0"
+  },
   "scripts": {
     "start:app": "node index.js",
     "start": "npm run start:app"
@@ -14,17 +17,27 @@
   "jshintConfig": {
     "esversion": 6
   },
-  "keywords": [ "authentication", "layerware", "auth", "sessions" ],
+  "keywords": [
+    "authentication",
+    "layerware",
+    "auth",
+    "sessions"
+  ],
   "author": "Austin Billings <me@austinbillings.com>",
   "license": "MIT",
-  "bugs": { "url": "https://github.com/austinbillings/skygate/issues" },
+  "bugs": {
+    "url": "https://github.com/austinbillings/skygate/issues"
+  },
   "homepage": "https://github.com/austinbillings/skygate#readme",
   "dependencies": {
     "body-parser": "^1.17.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.15.2",
     "moment": "^2.18.1",
+    "mongoose": "4.10.8",
     "node-uuid": "^1.4.7",
+    "sendgrid": "^5.2.0",
+    "trolley": "^0.2.4",
     "zaq": "^1.0.3"
   }
 }

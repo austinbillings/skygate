@@ -1,1 +1,1 @@
-module.exports = require('./src/SkyGate.js');
+module.exports = require('./src/SkyGate.js')();
