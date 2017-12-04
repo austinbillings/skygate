@@ -6,6 +6,8 @@ let Config = {
   signed: true,
   sendgridKey: null,
   dbUri: 'mongodb://127.0.0.1:27017',
+  verbose: false,
+  development: true,
   defaultFromAddress: null,
 
   appName: '',

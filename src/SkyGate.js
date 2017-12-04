@@ -31,8 +31,8 @@ const SkyGate = {
   init (config = {}) {
     Config.use(config);
     SkyGate.connect();
-    Trolley.onCrash(handleCrash);
-    Trolley.onDeliver(handleDelivery);
+    Trolley.onCrash(Config.verbose ? handleCrash : null);
+    Trolley.onDeliver(Config.verbose ? handleDelivery : null);
     zaq.use(new trolley().logger, { timestamps: true, stripColors: true });
     return SkyGate;
   },
@@ -142,35 +142,36 @@ const SkyGate = {
   },
 
   mount () {
-    const { endpoint, getRoot } = Config;
+    const { endpoint, getRoot, verbose } = Config;
     const url = (_path = '') => getRoot() + _path;
     const router = new express.Router();
     const secret = crypto.randomBytes(32).toString('hex');
+    const echo = verbose ? zaq.info : () => null;
 
     router.use(cookieParser(secret));
     router.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
     router.use(bodyParser.json({ limit: '10mb' }));
 
     router.get(endpoint, (req, res) => SkyGate.echoStatus(req, res));
-    zaq.info(message('AnnounceStatus', { url: url() }));
+    echo(message('AnnounceStatus', { url: url() }));
 
     router.post(endpoint, (req, res) => SkyGate.login(req, res));
-    zaq.info(message('AnnounceLogin', { url: url() }));
+    echo(message('AnnounceLogin', { url: url() }));
 
     router.delete(endpoint, (req, res) => SkyGate.logout(req, res));
-    zaq.info(message('AnnounceLogout', { url: url() }));
+    echo(message('AnnounceLogout', { url: url() }));
 
     const RegisterUrl = path.join(endpoint, '/register');
     router.post(RegisterUrl, (req, res) => SkyGate.register(req, res));
-    zaq.info(message('AnnounceRegister', { url: url(RegisterUrl) }));
+    echo(message('AnnounceRegister', { url: url(RegisterUrl) }));
 
     const ResetUrl = path.join(endpoint, '/reset');
     router.post(ResetUrl, (req, res) => SkyGate.register(req, res));
-    zaq.info(message('AnnounceReset', { url: url(ResetUrl) }));
+    echo(message('AnnounceReset', { url: url(ResetUrl) }));
 
     const ActivateUrl = path.join(endpoint, '/activate');
     router.get(ActivateUrl, (req, res) => SkyGate.activate(req, res));
-    zaq.info(message('AnnounceActivate', { url: url(ActivateUrl) }));
+    echo(message('AnnounceActivate', { url: url(ActivateUrl) }));
 
     zaq.win(message('ServiceMounted', { url: url() }));
     return router;
