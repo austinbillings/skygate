@@ -1,7 +1,8 @@
-const crypto = require('crypto');
+const zaq = require('zaq');
 const mongoose = require('mongoose');
-
+const { hashPass } = require('./Utils');
 const Config = require('./Config');
+
 
 const User = new mongoose.Schema({
   email: String,
@@ -25,13 +26,9 @@ const User = new mongoose.Schema({
 });
 
 User.methods.checkPassword = function (candidatePass) {
-  let { salt, pass } = this;
-  let { algo } = Config;
-  let hash = crypto.createHash(algo)
-    .update(candidatePass)
-    .update(salt)
-    .digest('hex');
+  const { salt, pass } = this;
+  const hash = hashPass({ pass: candidatePass, salt });
   return hash === pass;
 }
 
-module.exports = mongoose.model('User', User);
+module.exports = mongoose.model('SkygateUser', User);

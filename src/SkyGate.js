@@ -4,20 +4,36 @@ const chalk = require('chalk');
 const moment = require('moment');
 const crypto = require('crypto');
 const express = require('express');
+const trolley = require('trolley');
 const mongoose = require('mongoose');
-const Trolley = require('trolley');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
+const Trolley = trolley();
 const Lex = require('./Lex');
 const Utils = require('./Utils');
-const Sessions = require('./Sessions');
 const Users = require('./Users');
-const Config = require('./Config');
+const Config = require('./Config');;
+const Sessions = require('./Sessions');
+const Request = require('./RequestFactory')(Sessions);
+const { message } = Utils;
+
+const handleCrash = (payload) => {
+  const { message, code } = payload;
+  zaq.err(message + chalk.dim(` (${code})`), payload);
+};
+const handleDelivery = (payload) => {
+  const { message, code } = payload;
+  zaq.win(message + chalk.dim(` (${code})`), payload);
+};
 
 const SkyGate = {
-
   init (config = {}) {
     Config.use(config);
     SkyGate.connect();
+    Trolley.onCrash(handleCrash);
+    Trolley.onDeliver(handleDelivery);
+    zaq.use(new trolley().logger, { timestamps: true, stripColors: true });
     return SkyGate;
   },
 
@@ -27,51 +43,90 @@ const SkyGate = {
     mongoose.Promise = global.Promise;
 
     mongoose.connect(dbUri)
-      .then(() => zaq.win(Lex.MongoOk.replace('%uri%', chalk.reset.dim(cleanUri))))
-      .catch((err) => zaq.err(Lex.MongoFail.replace('%uri%', cleanUri), err));
+      .then(() => zaq.win(message('MongoOk', { uri: chalk.reset.dim(cleanUri) })))
+      .catch(err => zaq.err(message('MongoFail', { uri: cleanUri }), err));
   },
 
-  login (req, res) {
-    const request = new Request(req);
+  register (req, res) {
+    const requester = new Request(req);
 
-    if (request.isLoggedIn()) {
+    if (requester.isLoggedIn()) {
       let message = Lex.AlreadyLoggedIn;
       let code = 409;
       return Trolley.crash(res, { message, code });
     }
-    if (!request.canAttemptLogin()) {
-      let message = Lex.MaxAttemptsReached;
-      let code = 429;
-      return Trolley.crash(res, { message, code });
-    }
-    return Users.attemptLogin(req.body)
-      .then(user => Sessions.create(req, res, user))
+
+    return Users.validateRegistration(req.body)
+      .then(Users.registerUser)
+      .then(Users.sendActivationEmail)
+      .then((user) => {
+        Trolley.deliver(res, {
+          code: 201,
+          message: `Registered ${user.email}`,
+          registered: true,
+          activated: false
+        });
+      })
       .catch(message => Trolley.crash(res, { message }));
   },
 
+  activate (req, res) {
+    const requester = new Request(req);
+    return Users.attemptActivation(req.query)
+      .then(({ email }) => {
+        Trolley.deliver(res, {
+          message: `Activated ${email}`,
+          registered: true,
+          activated: true
+        });
+      })
+      .catch(message => Trolley.crash(res, { message }));
+  },
+
+  login (req, res) {
+    const requester = new Request(req);
+    const ip = requester.getIp();
+
+    if (requester.isLoggedIn()) {
+      let message = Lex.AlreadyLoggedIn;
+      let code = 409;
+      return Trolley.crash(res, { message, code, ip });
+    }
+    if (!requester.canAttemptLogin()) {
+      requester.lockout();
+      let message = Lex.MaxAttemptsReached;
+      let code = 429;
+      return Trolley.crash(res, { message, code, ip });
+    }
+    requester.registerLoginAttempt();
+    return Users.attemptLogin(req.body)
+      .then(user => Sessions.create(req, res, user))
+      .catch(message => Trolley.crash(res, { message, ip }));
+  },
+
   logout (req, res) {
-    const request = new Request(req);
-    const token = request.getToken();
+    const requester = new Request(req);
+    const token = requester.getToken();
 
     Sessions.destroy(token)
-    request.refreshToken(res);
+    requester.refreshToken(res);
     return SkyGate.echoStatus(req, res);
   },
 
   echoStatus (req, res) {
-    const request = new Request(req);
-    const loggedIn = request.isLoggedIn();
-    const user = request.getUser();
+    const requester = new Request(req);
+    const loggedIn = requester.isLoggedIn() || false;
+    const user = requester.getUser() || false;
     res.send({ loggedIn, user });
   },
 
   /* - = - = - = - = - = - =  Middleware - = - = - = - = - = - = - = - = - = */
 
   requireClearance (req, res, next) {
-    const request = new Request(req);
-    const token = request.getToken();
+    const requester = new Request(req);
+    const token = requester.getToken();
 
-    if (!request.isLoggedIn()) return Trolley.crash(res, {
+    if (!requester.isLoggedIn()) return Trolley.crash(res, {
       code: 401,
       message: Lex.Unauthorized,
       obj: token
@@ -84,25 +139,42 @@ const SkyGate = {
       message: Lex.BadGateway,
       obj: token
     });
-  }
+  },
 
-  mount (endpoint = '/') {
-    let router = new express.Router();
-    let secret = crypto.randomBytes(32).toString('hex');
+  mount () {
+    const { endpoint, getRoot } = Config;
+    const url = (_path = '') => getRoot() + _path;
+    const router = new express.Router();
+    const secret = crypto.randomBytes(32).toString('hex');
 
     router.use(cookieParser(secret));
     router.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
     router.use(bodyParser.json({ limit: '10mb' }));
 
     router.get(endpoint, (req, res) => SkyGate.echoStatus(req, res));
-    router.post(endpoint, (req, res) => SkyGate.login(req, res));
-    router.delete(endpoint, (req, res) => SkyGate.logout(req, res));
-    router.post(path.join(endpoint, '/register'), (req, res) => SkyGate.register(req, res));
-    router.post(path.join(endpoint, '/reset'), (req, res) => SkyGate.register(req, res));
+    zaq.info(message('AnnounceStatus', { url: url() }));
 
+    router.post(endpoint, (req, res) => SkyGate.login(req, res));
+    zaq.info(message('AnnounceLogin', { url: url() }));
+
+    router.delete(endpoint, (req, res) => SkyGate.logout(req, res));
+    zaq.info(message('AnnounceLogout', { url: url() }));
+
+    const RegisterUrl = path.join(endpoint, '/register');
+    router.post(RegisterUrl, (req, res) => SkyGate.register(req, res));
+    zaq.info(message('AnnounceRegister', { url: url(RegisterUrl) }));
+
+    const ResetUrl = path.join(endpoint, '/reset');
+    router.post(ResetUrl, (req, res) => SkyGate.register(req, res));
+    zaq.info(message('AnnounceReset', { url: url(ResetUrl) }));
+
+    const ActivateUrl = path.join(endpoint, '/activate');
+    router.get(ActivateUrl, (req, res) => SkyGate.activate(req, res));
+    zaq.info(message('AnnounceActivate', { url: url(ActivateUrl) }));
+
+    zaq.win(message('ServiceMounted', { url: url() }));
     return router;
   }
-
 };
 
 module.exports = SkyGate.init;

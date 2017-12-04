@@ -1,7 +1,10 @@
-const uid = require('node-uuid');
+const zaq = require('zaq');
+const uid = require('uuid');
+const Lex = require('./Lex');
 const Utils = require('./Utils');
 const Config = require('./Config');
-const Request = require('./Request');
+const Request = require('./RequestFactory')();
+const { message } = Utils;
 
 const Sessions = {
   active: [],
@@ -21,7 +24,7 @@ const Sessions = {
     let session = { user, ip, start, token };
 
     Sessions.active.push(session);
-    zaq.win(Lex.SessionStarted.replace('%token%', token).replace('%ip%', ip));
+    zaq.win(message('SessionStarted', { token, ip }));
     zaq.log(Utils.sessionTable(Sessions.active));
 
     res.cookie(cookieName, token, { maxAge, signed });
@@ -30,7 +33,7 @@ const Sessions = {
 
   destroy (token) {
     let index = Sessions.active.findIndex(s => s.token === token);
-    if (index < 0) return zaq.err(Lex.KillSessionFail.replace('%token%', token));
+    if (index < 0) return zaq.err(message('KillSessionFail', { token }));
     Sessions.active.splice(index, 1);
     zaq.info(Lex.KillSessionOk.replace('%token%', token));
   },
@@ -39,13 +42,18 @@ const Sessions = {
     return Sessions.active.find(session => session.token === token);
   },
 
-  registerLoginAttempt (req) {
-    const request = new Request(req);
-    const ip = request.getIp();
-    const count = (ip in Sessions.attempts)
-      ? Sessions.attempts[ip]
-      : (request.isLoggedIn() ? -1 : 0);
-    req.authAttempts = Sessions.attempts[ip] = (count + 1);
+  getAttempts (ip) {
+    return ip in Sessions.attempts ? Sessions.attempts[ip] : 0;
+  },
+
+  clearAttempts (ip) {
+    Sessions.attempts[ip] = 0;
+    zaq.info(message('IpTimelockDisabled', { ip }));
+  },
+
+  registerAttempt (ip) {
+    const attempts = Sessions.getAttempts(ip);
+    Sessions.attempts[ip] = attempts + 1;
   }
 };
 

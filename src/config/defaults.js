@@ -3,7 +3,11 @@ module.exports = {
   algo: 'sha256',
 
   maxAttempts: 10,
-  maxSessionLength: 3 * 60 * 60 * 1000,
+  maxSessionLength:
+    3 /* hours total, at */
+    * 60 /* minutes/hour */
+    * 60 /* seconds/minute */
+    * 1000, /* ms/second */
 
   cookieName: 'authToken',
   exposableAttributes: ['_id', 'name', 'email', 'created'],
