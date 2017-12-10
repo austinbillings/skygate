@@ -31,7 +31,7 @@ let Config = {
   endpoint: '/auth',
   getRoot () {
     const { protocol, host, port, endpoint } = Config;
-    return protocol + '://' + host + (port ? ':' + port : '');
+    return protocol + '://' + host + (port ? ':' + port : '') + endpoint;
   },
 
   tests: {
