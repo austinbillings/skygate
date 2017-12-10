@@ -161,17 +161,20 @@ const SkyGate = {
     router.delete(endpoint, (req, res) => SkyGate.logout(req, res));
     echo(message('AnnounceLogout', { url: url() }));
 
-    const RegisterUrl = path.join(endpoint, '/register');
+    const RegisterPath = '/register';
+    const RegisterUrl = path.join(endpoint, RegisterPath);
     router.post(RegisterUrl, (req, res) => SkyGate.register(req, res));
-    echo(message('AnnounceRegister', { url: url(RegisterUrl) }));
+    echo(message('AnnounceRegister', { url: url(RegisterPath) }));
 
-    const ResetUrl = path.join(endpoint, '/reset');
+    const ResetPath = '/reset';
+    const ResetUrl = path.join(endpoint, ResetPath);
     router.post(ResetUrl, (req, res) => SkyGate.register(req, res));
-    echo(message('AnnounceReset', { url: url(ResetUrl) }));
+    echo(message('AnnounceReset', { url: url(ResetPath) }));
 
-    const ActivateUrl = path.join(endpoint, '/activate');
+    const ActivatePath = '/activate';
+    const ActivateUrl = path.join(endpoint, ActivatePath);
     router.get(ActivateUrl, (req, res) => SkyGate.activate(req, res));
-    echo(message('AnnounceActivate', { url: url(ActivateUrl) }));
+    echo(message('AnnounceActivate', { url: url(ActivatePath) }));
 
     zaq.win(message('ServiceMounted', { url: url() }));
     return router;
