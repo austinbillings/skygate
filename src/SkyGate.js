@@ -12,8 +12,8 @@ const cookieParser = require('cookie-parser');
 const Trolley = trolley();
 const Lex = require('./Lex');
 const Utils = require('./Utils');
-const Users = require('./Users');
-const Config = require('./Config');;
+const Config = require('./Config');
+const UserDB = require('./UserDB');
 const Sessions = require('./Sessions');
 const Request = require('./RequestFactory')(Sessions);
 const { message } = Utils;
@@ -30,6 +30,7 @@ const handleDelivery = (payload) => {
 const SkyGate = {
   init (config = {}) {
     Config.use(config);
+    SkyGate.Users = new UserDB(Config);
     SkyGate.connect();
     Trolley.onCrash(Config.verbose ? handleCrash : null);
     Trolley.onDeliver(Config.verbose ? handleDelivery : null);
@@ -56,9 +57,9 @@ const SkyGate = {
       return Trolley.crash(res, { message, code });
     }
 
-    return Users.validateRegistration(req.body)
-      .then(Users.registerUser)
-      .then(Users.sendActivationEmail)
+    return Skygate.Users.validateRegistration(req.body)
+      .then(Skygate.Users.registerUser)
+      .then(Skygate.Users.sendActivationEmail)
       .then((user) => {
         Trolley.deliver(res, {
           code: 201,
@@ -72,7 +73,7 @@ const SkyGate = {
 
   activate (req, res) {
     const requester = new Request(req);
-    return Users.attemptActivation(req.query)
+    return Skgate.Users.attemptActivation(req.query)
       .then(({ email }) => {
         Trolley.deliver(res, {
           message: `Activated ${email}`,
@@ -99,7 +100,7 @@ const SkyGate = {
       return Trolley.crash(res, { message, code, ip });
     }
     requester.registerLoginAttempt();
-    return Users.attemptLogin(req.body)
+    return Skygate.Users.attemptLogin(req.body)
       .then(user => Sessions.create(req, res, user))
       .catch(message => Trolley.crash(res, { message, ip }));
   },

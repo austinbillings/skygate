@@ -1,34 +1,14 @@
 const zaq = require('zaq');
 const mongoose = require('mongoose');
-const { hashPass } = require('./Utils');
-const Config = require('./Config');
+const UserSchema = require('./UserSchema');
+const { message } = require('./Utils');
 
+const nameCache = [];
 
-const User = new mongoose.Schema({
-  email: String,
-  name: String,
-  salt: String,
-  pass: String,
-  resetToken: String,
-  activationToken: String,
-  activated: {
-    type: Boolean,
-    default: false
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  },
-  created: {
-    type: Date,
-    default: Date.now
+module.exports = function ({ userModelName = 'skygate_user' }) {
+  if (!nameCache.contains(userModelName)) {
+    zaq.info(message('UsingUserModel', { userModelName });
+    nameCache.push(userModelName);
   }
-});
-
-User.methods.checkPassword = function (candidatePass) {
-  const { salt, pass } = this;
-  const hash = hashPass({ pass: candidatePass, salt });
-  return hash === pass;
+  return mongoose.model(userModelName, UserSchema);
 }
-
-module.exports = mongoose.model('SkygateUser', User);

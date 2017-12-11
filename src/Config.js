@@ -11,7 +11,7 @@ let Config = {
   defaultFromAddress: null,
 
   appName: '',
-  modelPrefix: 'SkyGate_',
+  userModelName: 'skygate_user',
 
   maxAttempts: 10,
   allowRegistration: true,

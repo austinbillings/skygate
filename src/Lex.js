@@ -6,6 +6,7 @@ module.exports = {
   MongoFail: chalk.red('Failed to Connect') + ' SkyGate to MongoDB using URI: \n \t  %uri%',
   MongoOk: chalk.green('Connected') + ' SkyGate to MongoDB using URI: \n \t  %uri%',
   ServiceMounted: chalk.green('Mounted') + ' SkyGate at URL: \n \t  ' + chalk.blue('%url%'),
+  UsingUserModel: 'Using User Model Name: ' + chalk.blue('%userModelName%'),
 
   AnnounceStatus: chalk.gray('GET ') + chalk.blue.dim.underline('%url%') + chalk.gray(' for status'),
   AnnounceLogin: chalk.gray('POST ') + chalk.blue.dim.underline('%url%') + chalk.gray(' for login'),
