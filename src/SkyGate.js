@@ -22,6 +22,7 @@ const handleCrash = (payload) => {
   const { message, code } = payload;
   zaq.err(message + chalk.dim(` (${code})`), payload);
 };
+
 const handleDelivery = (payload) => {
   const { message, code } = payload;
   zaq.win(message + chalk.dim(` (${code})`), payload);
@@ -53,13 +54,13 @@ const SkyGate = {
 
     if (requester.isLoggedIn()) {
       let message = Lex.AlreadyLoggedIn;
-      let code = 409;
-      return Trolley.crash(res, { message, code });
+      let code = 202;
+      return Trolley.deliver(res, { message, code });
     }
 
-    return Skygate.Users.validateRegistration(req.body)
-      .then(Skygate.Users.registerUser)
-      .then(Skygate.Users.sendActivationEmail)
+    return SkyGate.Users.validateRegistration(req.body)
+      .then(SkyGate.Users.registerUser)
+      .then(SkyGate.Users.sendActivationEmail)
       .then((user) => {
         Trolley.deliver(res, {
           code: 201,
@@ -68,12 +69,15 @@ const SkyGate = {
           activated: false
         });
       })
-      .catch(message => Trolley.crash(res, { message }));
+      .catch(err => {
+        const { message } = err.message ? err : { message: err };
+        Trolley.crash(res, { message })
+      });
   },
 
   activate (req, res) {
     const requester = new Request(req);
-    return Skgate.Users.attemptActivation(req.query)
+    return SkyGate.Users.attemptActivation(req.query)
       .then(({ email }) => {
         Trolley.deliver(res, {
           message: `Activated ${email}`,
@@ -100,7 +104,7 @@ const SkyGate = {
       return Trolley.crash(res, { message, code, ip });
     }
     requester.registerLoginAttempt();
-    return Skygate.Users.attemptLogin(req.body)
+    return SkyGate.Users.attemptLogin(req.body, Sessions.active)
       .then(user => Sessions.create(req, res, user))
       .catch(message => Trolley.crash(res, { message, ip }));
   },
@@ -116,8 +120,8 @@ const SkyGate = {
 
   echoStatus (req, res) {
     const requester = new Request(req);
-    const loggedIn = requester.isLoggedIn() || false;
-    const user = requester.getUser() || false;
+    const loggedIn = requester.isLoggedIn();
+    const user = requester.getUser();
     res.send({ loggedIn, user });
   },
 

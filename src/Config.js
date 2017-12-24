@@ -15,7 +15,7 @@ let Config = {
 
   maxAttempts: 10,
   allowRegistration: true,
-  maxAge: 24 * 60 * 60,
+  maxAge: 24 * 60 * 60 * 1000,
 
   cookieName: 'authToken',
   privateKeys: [

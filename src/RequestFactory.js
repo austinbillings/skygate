@@ -1,5 +1,5 @@
 const trolley = require('trolley');
-
+const zaq = require('zaq');
 const Lex = require('./Lex');
 const Config = require('./Config');
 
@@ -14,9 +14,18 @@ module.exports = (Sessions) => {
           code: 500,
           obj: req
         });
+
       this.req = req;
       this.res = res;
-      return this;
+
+      this.getIp = this.getIp.bind(this);
+      this.getUser = this.getUser.bind(this);
+      this.lockout = this.lockout.bind(this);
+      this.getToken = this.getToken.bind(this);
+      this.isLoggedIn = this.isLoggedIn.bind(this);
+      this.refreshToken = this.refreshToken.bind(this);
+      this.canAttemptLogin = this.canAttemptLogin.bind(this);
+      this.registerLoginAttempt = this.registerLoginAttempt.bind(this);
     }
 
     getIp () {

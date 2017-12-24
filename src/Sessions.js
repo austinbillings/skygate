@@ -9,6 +9,7 @@ const { message } = Utils;
 const Sessions = {
   active: [],
   attempts: {},
+  leases: {},
 
   create (req, res, rawUser) {
     const { cookieName, maxAge } = Config;
@@ -19,11 +20,13 @@ const Sessions = {
     const ip = request.getIp();
     const user = Utils.vetUser(rawUser);
     const start = (new Date()).getTime();
+    const end = start + maxAge;
 
     let payload = { user, ip, start };
-    let session = { user, ip, start, token };
+    let session = { user, ip, start, token, end };
 
     Sessions.active.push(session);
+    Sessions.leases[token] = setTimeout(() => { Sessions.destroy(token); }, maxAge);
     zaq.win(message('SessionStarted', { token, ip }));
     zaq.log(Utils.sessionTable(Sessions.active));
 

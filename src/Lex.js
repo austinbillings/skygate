@@ -34,7 +34,7 @@ module.exports = {
 
   BadEmail: 'No user with that email address could be found.',
   BadEmailOrPass: 'Incorrect email or password given.',
-  EmailAlreadyUsed: 'A user with the email "%email%" already exists.',
+  EmailAlreadyUsed: 'That email address has already been used.',
   BadActivation: 'Invalid activation parameters provided.',
   ActivatedUser: 'Successfully activated %email%.',
   IpTimelockDisabled: 'IP %ip% lockout time has expired.',
@@ -42,7 +42,7 @@ module.exports = {
   AlreadyLoggedIn: 'You\'re already logged in.',
   MaxAttemptsReached: 'Too many invalid login attempts. You have been locked out for 1 minute.',
   SessionStarted: 'Session started from IP %ip% using token: \n \t  %token%',
-  NotActivated: 'Account not activated. Activate your account using the link sent to your email.',
+  NotActivated: 'Account not activated. Please activate your account using the link sent to your email.',
   AccountDisabled: 'Your account has been disabled. Beware.',
   KillSessionFail: 'No session matching token "%token%" could be found. Failed to kill.',
   KillSessionOk: 'Successfully killed session with token "%token%".',
