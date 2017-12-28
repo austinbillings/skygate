@@ -1,5 +1,5 @@
+const zaq = require('zaq').as('SkyGate');
 const trolley = require('trolley');
-const zaq = require('zaq');
 const Lex = require('./Lex');
 const Config = require('./Config');
 

@@ -1,4 +1,4 @@
-const zaq = require('zaq');
+const zaq = require('zaq').as('SkyGate');
 const mongoose = require('mongoose');
 const UserSchema = require('./UserSchema');
 const { message } = require('./Utils');

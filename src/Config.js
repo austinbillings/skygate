@@ -1,4 +1,4 @@
-const zaq = require('zaq');
+const zaq = require('zaq').as('SkyGate');
 const Lex = require('./Lex');
 
 let Config = {

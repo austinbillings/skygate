@@ -1,4 +1,4 @@
-const zaq = require('zaq');
+const zaq = require('zaq').as('SkyGate');
 const uid = require('uuid');
 const Lex = require('./Lex');
 const Utils = require('./Utils');

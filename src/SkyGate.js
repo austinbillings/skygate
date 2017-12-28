@@ -1,4 +1,4 @@
-const zaq = require('zaq');
+const zaq = require('zaq').as('SkyGate');
 const path = require('path');
 const chalk = require('chalk');
 const moment = require('moment');

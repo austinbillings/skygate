@@ -1,4 +1,4 @@
-const zaq = require('zaq');
+const zaq = require('zaq').as('SkyGate');
 const mongoose = require('mongoose');
 const { hashPass } = require('./Utils');
 const Config = require('./Config');

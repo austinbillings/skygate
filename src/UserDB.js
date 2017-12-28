@@ -1,9 +1,9 @@
+const zaq = require('zaq').as('SkyGate');
 const Lex = require('./Lex');
 const Utils = require('./Utils');
 const Sessions = require('./Sessions');
 const UserModel = require('./UserModel');
 
-const zaq = require('zaq');
 const mongoose = require('mongoose');
 
 const { hashPass, generateSalt, sendEmail, vetUser, message, scramble, descramble } = Utils;
