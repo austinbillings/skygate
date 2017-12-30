@@ -41,6 +41,14 @@ module.exports = (Sessions) => {
         : undefined;
     }
 
+    info () {
+      const ip = this.getIp();
+      const user = this.getUser();
+      const token = this.getToken();
+      const isLoggedIn = this.isLoggedIn();
+      return { ip, user, token, isLoggedIn };
+    }
+
     refreshToken (res) {
       let { maxSessionLength, cookieName, signed } = Config;
       const token = this.getToken();

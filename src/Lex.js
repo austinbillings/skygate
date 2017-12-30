@@ -41,7 +41,7 @@ module.exports = {
 
   AlreadyLoggedIn: 'You\'re already logged in.',
   MaxAttemptsReached: 'Too many invalid login attempts. You have been locked out for 1 minute.',
-  SessionStarted: 'Session started from IP %ip% using token: \n \t  %token%',
+  SessionStarted: 'Session started from IP %ip% using token: \n \t  ' + chalk.cyan('[%token%]'),
   NotActivated: 'Account not activated. Please activate your account using the link sent to your email.',
   AccountDisabled: 'Your account has been disabled. Beware.',
   KillSessionFail: 'No session matching token "%token%" could be found. Failed to kill.',

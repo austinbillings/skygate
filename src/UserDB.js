@@ -75,7 +75,7 @@ class UserDB {
     if (!user.checkPassword(pass)) return Promise.reject(Lex.BadEmailOrPass);
     if (!user.activated) return Promise.reject(Lex.NotActivated);
     if (user.disabled) return Promise.reject(Lex.AccountDisabled);
-    if (sessionList.some(({ user }) => user.email === email)) return Promise.reject(Lex.AlreadyLoggedIn);
+    // if (sessionList.some(({ user }) => user.email === email)) return Promise.reject(Lex.AlreadyLoggedIn);
     return user;
   }
 
