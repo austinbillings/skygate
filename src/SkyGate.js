@@ -16,7 +16,7 @@ const Config = require('./Config');
 const UserDB = require('./UserDB');
 const Sessions = require('./Sessions');
 const Request = require('./RequestFactory')(Sessions);
-const { message } = Utils;
+const { makeMessage, appendMeta } = Utils;
 
 const handleCrash = (payload) => {
   const { message, code } = payload;
@@ -45,15 +45,15 @@ const SkyGate = {
     mongoose.Promise = global.Promise;
 
     mongoose.connect(dbUri)
-      .then(() => zaq.win(message('MongoOk', { uri: chalk.reset.dim(cleanUri) })))
-      .catch(err => zaq.err(message('MongoFail', { uri: cleanUri }), err));
+      .then(() => zaq.win(makeMessage('MongoOk', { uri: chalk.reset.dim(cleanUri) })))
+      .catch(err => zaq.err(makeMessage('MongoFail', { uri: cleanUri }), err));
   },
 
   register (req, res) {
     const requester = new Request(req);
 
     if (requester.isLoggedIn()) {
-      let message = Lex.AlreadyLoggedIn;
+      let message = requester.appendMeta(Lex.AlreadyLoggedIn);
       let code = 403;
       return Trolley.crash(res, { message, code });
     }
@@ -93,12 +93,12 @@ const SkyGate = {
     const ip = requester.getIp();
 
     if (requester.isLoggedIn()) {
-      let message = Lex.AlreadyLoggedIn;
+      let message = requester.appendMeta(Lex.AlreadyLoggedIn);
       return Trolley.deliver(res, { message, ip });
     }
     if (!requester.canAttemptLogin()) {
       requester.lockout();
-      let message = Lex.MaxAttemptsReached;
+      let message = requester.appendMeta(Lex.MaxAttemptsReached);
       let code = 429;
       return Trolley.crash(res, { message, code, ip });
     }
@@ -131,7 +131,7 @@ const SkyGate = {
     const token = requester.getToken();
 
     if (!requester.isLoggedIn()) return Trolley.crash(res, {
-      message: Lex.Unauthorized,
+      message: requester.appendMeta(Lex.Unauthorized),
       obj: token,
       code: 401
     });
@@ -140,7 +140,7 @@ const SkyGate = {
 
     else return Trolley.crash(res, {
       code: 502,
-      message: Lex.BadGateway,
+      message: requester.appendMeta(Lex.BadGateway),
       obj: token
     });
   },
@@ -150,7 +150,7 @@ const SkyGate = {
     const url = (_path = '') => getRoot() + _path;
     const router = new express.Router();
     const echo = verbose
-      ? (...args) => zaq.info(message(...args))
+      ? (...args) => zaq.info(makeMessage(...args))
       : () => null;
 
     router.use(cookieParser(secret));
@@ -181,7 +181,7 @@ const SkyGate = {
     router.get(ActivateUrl, (req, res) => SkyGate.activate(req, res));
     echo('AnnounceActivate', { url: url(ActivatePath) });
 
-    zaq.win(message('ServiceMounted', { url: url() }));
+    zaq.win(makeMessage('ServiceMounted', { url: url() }));
     return router;
   }
 };

@@ -6,7 +6,7 @@ const UserModel = require('./UserModel');
 
 const mongoose = require('mongoose');
 
-const { hashPass, generateSalt, sendEmail, vetUser, message, scramble, descramble } = Utils;
+const { hashPass, generateSalt, sendEmail, vetUser, makeMessage, scramble, descramble } = Utils;
 
 class UserDB {
   constructor (config) {
@@ -60,7 +60,7 @@ class UserDB {
     if (!tests.pass.test(pass)) throw new Error(Lex.WeirdPass);
     if (!tests.name.test(name)) throw new Error(Lex.WeirdName);
     if (!canRegister({ email })) {
-      const Rejection = message('RegistrationRejected', { email })
+      const Rejection = makeMessage('RegistrationRejected', { email })
       throw new Error(Rejection);
     }
     return true;
@@ -84,10 +84,10 @@ class UserDB {
     try { validateRegistrationCredentials({ name, email, pass }); }
     catch (err) { throw new Error(err); }
     const existingUser = await findByEmail(email);
-    const AlreadyTaken = message('EmailAlreadyUsed', { email });
+    const AlreadyTaken = makeMessage('EmailAlreadyUsed', { email });
     if (existingUser) throw new Error(AlreadyTaken);
 
-    zaq.info(message('RegistrationAccepted', { email }));
+    zaq.info(makeMessage('RegistrationAccepted', { email }));
     return { name, email, pass };
   }
 
@@ -110,9 +110,9 @@ class UserDB {
     return new Promise((resolve, reject) => {
       sendEmail({
         to: email,
-        text: message('RegistrationActivation', { url, name }),
-        html: message('RegistrationActivationHTML', { url, name }),
-        subject: message('RegistrationActivationSubject', { name })
+        text: makeMessage('RegistrationActivation', { url, name }),
+        html: makeMessage('RegistrationActivationHTML', { url, name }),
+        subject: makeMessage('RegistrationActivationSubject', { name })
       })
       .then(result => resolve({ name, email }))
       .catch(err => {
@@ -126,7 +126,7 @@ class UserDB {
     return new Promise((resolve, reject) => {
       if (typeof token !== 'string' || !token.length || typeof ref !== 'string' || !ref.length) {
         zaq.err(Lex.BadActivation, { token, ref });
-        reject(message('BadActivation'));
+        reject(makeMessage('BadActivation'));
       }
 
       const email = descramble(ref);

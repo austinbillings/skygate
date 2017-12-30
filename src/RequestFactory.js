@@ -28,17 +28,28 @@ module.exports = (Sessions) => {
       this.registerLoginAttempt = this.registerLoginAttempt.bind(this);
     }
 
-    getIp () {
-      const { req } = this;
-      return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    }
-
     getToken () {
       const { signedCookies } = this.req;
       const { cookieName } = Config;
       return (signedCookies && signedCookies[cookieName])
         ? signedCookies[cookieName]
         : undefined;
+    }
+
+    getIp () {
+      const { req } = this;
+      return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    }
+
+    getUrl () {
+      const { originalUrl } = this.req;
+      return originalUrl;
+    }
+
+    appendMeta (text = '') {
+      const ip = this.getIp();
+      const url = this.getUrl();
+      return `${text} (${ip} @ ${url})`;
     }
 
     info () {

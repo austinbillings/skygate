@@ -4,7 +4,7 @@ const Lex = require('./Lex');
 const Utils = require('./Utils');
 const Config = require('./Config');
 const Request = require('./RequestFactory')();
-const { message } = Utils;
+const { makeMessage } = Utils;
 
 const Sessions = {
   active: [],
@@ -27,7 +27,7 @@ const Sessions = {
 
     Sessions.active.push(session);
     Sessions.leases[token] = setTimeout(() => { Sessions.destroy(token); }, maxAge);
-    zaq.win(message('SessionStarted', { token, ip }));
+    zaq.win(makeMessage('SessionStarted', { token, ip }));
     zaq.log(Utils.sessionTable(Sessions.active));
 
     res.cookie(cookieName, token, { maxAge, signed });
@@ -36,7 +36,7 @@ const Sessions = {
 
   destroy (token) {
     let index = Sessions.active.findIndex(s => s.token === token);
-    if (index < 0) return zaq.err(message('KillSessionFail', { token }));
+    if (index < 0) return zaq.err(makeMessage('KillSessionFail', { token }));
     Sessions.active.splice(index, 1);
     zaq.info(Lex.KillSessionOk.replace('%token%', token));
   },
@@ -51,7 +51,7 @@ const Sessions = {
 
   clearAttempts (ip) {
     Sessions.attempts[ip] = 0;
-    zaq.info(message('IpTimelockDisabled', { ip }));
+    zaq.info(makeMessage('IpTimelockDisabled', { ip }));
   },
 
   registerAttempt (ip) {

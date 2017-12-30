@@ -49,7 +49,7 @@ const Utils = {
     return atob(decodeURIComponent(text));
   },
 
-  message (messageKey, injectables = {}) {
+  makeMessage (messageKey, injectables = {}) {
     let message = Lex[messageKey];
     if (!message) return messageKey;
     if (typeof injectables !== 'object' || !Object.keys(injectables).length) return message;
@@ -58,6 +58,12 @@ const Utils = {
       message = message.split(`%${key}%`).join(value);
     });
     return message;
+  },
+
+  appendMeta (requester, text) {
+    const ip = requester.getIp();
+    const url = requester.getUrl();
+    return `${text} (${ip} @ ${url})`;
   },
 
   sanitizeConnectionUri (uri) {

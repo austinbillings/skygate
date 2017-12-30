@@ -17,6 +17,19 @@ let Config = {
   allowRegistration: true,
   maxAge: 24 * 60 * 60 * 1000,
 
+  port: null,
+  protocol: 'http',
+  host: '127.0.0.1',
+  endpoint: '/auth',
+  getRoot () {
+    const { protocol, host, port, path, endpoint } = Config;
+    return protocol
+      + '://'
+      + host
+      + (port ? ':' + port : '')
+      + (path ? path : '')
+      + endpoint;
+  },
   cookieName: 'authToken',
   privateKeys: [
     'pass',
@@ -24,15 +37,6 @@ let Config = {
     'resetToken',
     'activationToken'
   ],
-
-  port: null,
-  protocol: 'http',
-  host: '127.0.0.1',
-  endpoint: '/auth',
-  getRoot () {
-    const { protocol, host, port, endpoint } = Config;
-    return protocol + '://' + host + (port ? ':' + port : '') + endpoint;
-  },
 
   tests: {
     name: /^[a-zA-Z-. ]{1,256}$/,
