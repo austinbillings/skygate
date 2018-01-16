@@ -146,7 +146,7 @@ const SkyGate = {
   },
 
   mount () {
-    const { endpoint, getRoot, verbose, secret } = Config;
+    const { getRoot, verbose, secret } = Config;
     const url = (_path = '') => getRoot() + _path;
     const router = new express.Router();
     const echo = verbose
@@ -157,28 +157,25 @@ const SkyGate = {
     router.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
     router.use(bodyParser.json({ limit: '10mb' }));
 
-    router.get(endpoint, (req, res) => SkyGate.echoStatus(req, res));
+    router.get('/', (req, res) => SkyGate.echoStatus(req, res));
     echo('AnnounceStatus', { url: url() });
 
-    router.post(endpoint, (req, res) => SkyGate.login(req, res));
+    router.post('/', (req, res) => SkyGate.login(req, res));
     echo('AnnounceLogin', { url: url() });
 
-    router.delete(endpoint, (req, res) => SkyGate.logout(req, res));
+    router.delete('/', (req, res) => SkyGate.logout(req, res));
     echo('AnnounceLogout', { url: url() });
 
     const RegisterPath = '/register';
-    const RegisterUrl = path.join(endpoint, RegisterPath);
-    router.post(RegisterUrl, (req, res) => SkyGate.register(req, res));
+    router.post(RegisterPath, (req, res) => SkyGate.register(req, res));
     echo('AnnounceRegister', { url: url(RegisterPath) });
 
     const ResetPath = '/reset';
-    const ResetUrl = path.join(endpoint, ResetPath);
-    router.post(ResetUrl, (req, res) => SkyGate.register(req, res));
+    router.post(ResetPath, (req, res) => SkyGate.register(req, res));
     echo('AnnounceReset', { url: url(ResetPath) });
 
     const ActivatePath = '/activate';
-    const ActivateUrl = path.join(endpoint, ActivatePath);
-    router.get(ActivateUrl, (req, res) => SkyGate.activate(req, res));
+    router.get(ActivatePath, (req, res) => SkyGate.activate(req, res));
     echo('AnnounceActivate', { url: url(ActivatePath) });
 
     zaq.win(makeMessage('ServiceMounted', { url: url() }));
