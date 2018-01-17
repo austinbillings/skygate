@@ -1,8 +1,9 @@
 const chalk = require('chalk');
 
 module.exports = {
-  ServiceOk: chalk.green('Initialized') + ' SkyGate Service',
-  ServiceFail: chalk.red('Failed to start') + 'SkyGate Service',
+  Initializing: chalk.dim('Starting SkyGate for ') + chalk.reset.bold('%appName%'),
+  ServiceOk: chalk.green('Initialized') + ' SkyGate Service for ' + chalk.bold('%appName%'),
+  ServiceFail: chalk.red('Failed to start') + 'SkyGate Service for ' + chalk.bold('%appName%'),
   MongoFail: chalk.red('Failed to Connect') + ' SkyGate to MongoDB using URI: \n \t  %uri%',
   MongoOk: chalk.green('Connected') + ' SkyGate to MongoDB using URI: \n \t  %uri%',
   ServiceMounted: chalk.green('Mounted') + ' SkyGate at URL: \n \t  ' + chalk.blue('%url%'),
@@ -32,20 +33,23 @@ module.exports = {
   WeirdPass: 'Invalid password provided. Passwords are 10-256 characters long and may include the following special characters: "!@#`~%^&?_-".',
   WeirdName: 'Invalid name format given. Names can only contain letters, spaces, hyphens, and periods.',
 
-  BadEmail: 'No user with that email address could be found.',
-  BadEmailOrPass: 'Incorrect email or password given.',
-  EmailAlreadyUsed: 'That email address has already been used.',
-  BadActivation: 'Invalid activation parameters provided.',
   ActivatedUser: 'Successfully activated %email%.',
+  BadEmailOrPass: 'Incorrect email or password given.',
   IpTimelockDisabled: 'IP %ip% lockout time has expired.',
+  BadActivation: 'Invalid activation parameters provided.',
+  BadEmail: 'No user with that email address could be found.',
+  EmailAlreadyUsed: 'That email address has already been used.',
 
   AlreadyLoggedIn: 'You\'re already logged in.',
   MaxAttemptsReached: 'Too many invalid login attempts. You have been locked out for 1 minute.',
   SessionStarted: 'Session started from IP %ip% using token: \n \t  ' + chalk.green.dim('[%token%]'),
   NotActivated: 'Account not activated. Please activate your account using the link sent to your email.',
   AccountDisabled: 'Your account has been disabled. Beware.',
+
   KillSessionFail: 'No session matching token "%token%" could be found. Failed to kill.',
   KillSessionOk: 'Successfully killed session with token "%token%".',
+
+  NoAppNameSet: 'No Application Name ({ appName }) given in configuration. \n \t ' + chalk.dim('The appName is used in the Account Activation email. \'%appName%\' will be used by default.'),
   NoFromAddress: 'Attempted <sendMessage> without a "from" address. \n \t  You can set a default address by setting `defaultFromAddress` in config.',
   NoSendgridKeyProvided: 'No SendGrid API key ({ sendgridKey }) given in configuration. \n \t  Registration will be disabled as no emails can be sent.',
   BadSendgridKeyProvided: 'Invalid SendGrid API key provided. \n \t  Registration will be disabled as no emails can be sent.',
@@ -56,13 +60,13 @@ module.exports = {
   RegistrationDisabled: 'Registration is disabled. ' + chalk.grey('You might wanna take a look at that.'),
   RegistrationRejected: 'Registration is disallowed for "%email%".',
   RegisteredSuccessfully: 'Successfully Registered! Verify your email address to activate your account.',
-  RegistrationActivationSubject: 'Welcome, %name%. Please Confirm Your Email',
+  RegistrationActivationSubject: '%appName% Account Activation',
   RegistrationActivation: 'Hey there, %name%! \nUse the following url to activate your account: %url%',
   RegistrationActivationHTML: `
     <html>
       <body style="font-family: 'San Francisco', 'Univers', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; padding: 30px;">
-        <h1 style="border-bottom: 1px solid rgba(128, 128, 128, 0.3); padding-bottom: 5px; margin-bottom: 5px;">Almost there, %name%.</h1>
-        <p style="margin: 0">We just need to verify your email address in order to activate your account.</p>
+        <h1 style="border-bottom: 1px solid rgba(128, 128, 128, 0.3); padding-bottom: 5px; margin-bottom: 5px;">Welcome to %appName%.</h1>
+        <p style="margin: 0">Almost there, %name%. We just need to verify your email address in order to activate your account.</p>
         <p>
           <a href="%url%" target="_blank" style="text-decoration: none;">
             <button style="border: 1px solid rgba(128, 128, 128, 0.3); line-height: 1em; background-color: black; padding: 10px 30px; margin: 5px 0 0; color: white">
@@ -72,7 +76,8 @@ module.exports = {
         </p>
         <br />
         <p style="font-size: 0.6em; opacity: 0.35; max-width: 400px">
-          If you believe you have received this email in error, please contact your system administrator or simply ignore this message. Please do not activate the account if you have not requested its creation.
+          If you believe you have received this email in error, please contact your system administrator or simply ignore this message.
+          Please do not activate the account if you have not requested its creation.
         </p>
       </body>
     </html>

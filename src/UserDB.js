@@ -105,14 +105,15 @@ class UserDB {
   }
 
   sendActivationEmail ({ name, email, activationToken }) {
-    const { getRoot } = this.config;
-    const url = `${getRoot()}/activate?token=${activationToken}&ref=${scramble(email)}`;
+    const { appName, getRoot } = this.config;
+    const base = getRoot();
+    const url = `${base}/activate?token=${activationToken}&ref=${scramble(email)}`;
     return new Promise((resolve, reject) => {
       sendEmail({
         to: email,
-        text: makeMessage('RegistrationActivation', { url, name }),
-        html: makeMessage('RegistrationActivationHTML', { url, name }),
-        subject: makeMessage('RegistrationActivationSubject', { name })
+        text: makeMessage('RegistrationActivation', { url, name, appName }),
+        html: makeMessage('RegistrationActivationHTML', { url, name, appName }),
+        subject: makeMessage('RegistrationActivationSubject', { name, appName })
       })
       .then(result => resolve({ name, email }))
       .catch(err => {

@@ -27,6 +27,7 @@ const Sessions = {
 
     Sessions.active.push(session);
     Sessions.leases[token] = setTimeout(() => { Sessions.destroy(token); }, maxAge);
+
     zaq.win(makeMessage('SessionStarted', { token, ip }));
     zaq.log(Utils.sessionTable(Sessions.active));
 

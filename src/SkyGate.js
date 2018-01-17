@@ -13,6 +13,7 @@ const Trolley = trolley();
 const Lex = require('./Lex');
 const Utils = require('./Utils');
 const Config = require('./Config');
+const Defaults = require('./Defaults');
 const UserDB = require('./UserDB');
 const Sessions = require('./Sessions');
 const Request = require('./RequestFactory')(Sessions);
@@ -30,6 +31,9 @@ const handleDelivery = (payload) => {
 
 const SkyGate = {
   init (config = {}) {
+    const { appName } = config.appName ? config : Defaults;
+    zaq.flag(makeMessage('Initializing', { appName }));
+
     Config.use(config);
     SkyGate.Users = new UserDB(Config);
     SkyGate.connect();
@@ -146,7 +150,7 @@ const SkyGate = {
   },
 
   mount () {
-    const { getRoot, verbose, secret } = Config;
+    const { getRoot, verbose, secret, appName } = Config;
     const url = (_path = '') => getRoot() + _path;
     const router = new express.Router();
     const echo = verbose
