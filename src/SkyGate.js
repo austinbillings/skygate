@@ -29,6 +29,10 @@ const handleDelivery = (payload) => {
   zaq.win(message + chalk.dim(` (${code})`));
 };
 
+const notImplemented = (req, res) => {
+  return Trolley.crash(res, { code: 501, message: Lex.NotImplemented });
+};
+
 const SkyGate = {
   init (config = {}) {
     const { appName } = config.appName ? config : Defaults;
@@ -83,11 +87,10 @@ const SkyGate = {
     const requester = new Request(req);
     return SkyGate.Users.attemptActivation(req.query)
       .then(({ email }) => {
-        Trolley.deliver(res, {
-          message: `Activated ${email}`,
-          registered: true,
-          activated: true
-        });
+        const { activationLanding } = Config;
+        res.set('location', activationLanding)
+          .status(303)
+          .end();
       })
       .catch(message => Trolley.crash(res, { message }));
   },
@@ -150,7 +153,7 @@ const SkyGate = {
   },
 
   mount () {
-    const { getRoot, verbose, secret, appName } = Config;
+    const { getRoot, verbose, secret, appName, paths } = Config;
     const url = (_path = '') => getRoot() + _path;
     const router = new express.Router();
     const echo = verbose
@@ -161,26 +164,48 @@ const SkyGate = {
     router.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
     router.use(bodyParser.json({ limit: '10mb' }));
 
-    router.get('/', (req, res) => SkyGate.echoStatus(req, res));
-    echo('AnnounceStatus', { url: url() });
+    const endpoints = [
+      {
+        uri: paths.session,
+        handler: SkyGate.echoStatus,
+        announce: 'AnnounceStatus'
+      },
+      {
+        method: 'post',
+        uri: paths.session,
+        handler: SkyGate.login,
+        announce: 'AnnounceLogin'
+      },
+      {
+        method: 'delete',
+        uri: paths.session,
+        handler: SkyGate.logout,
+        announce: 'AnnounceLogout'
+      },
+      {
+        method: 'post',
+        uri: paths.register,
+        handler: SkyGate.register,
+        announce: 'AnnounceRegister'
+      },
+      {
+        method: 'post',
+        uri: paths.reset,
+        handler: notImplemented,
+        announce: 'AnnounceReset'
+      },
+      {
+        uri: paths.activate,
+        handler: SkyGate.activate,
+        announce: 'AnnounceActivate'
+      },
+    ];
 
-    router.post('/', (req, res) => SkyGate.login(req, res));
-    echo('AnnounceLogin', { url: url() });
-
-    router.delete('/', (req, res) => SkyGate.logout(req, res));
-    echo('AnnounceLogout', { url: url() });
-
-    const RegisterPath = '/register';
-    router.post(RegisterPath, (req, res) => SkyGate.register(req, res));
-    echo('AnnounceRegister', { url: url(RegisterPath) });
-
-    const ResetPath = '/reset';
-    router.post(ResetPath, (req, res) => SkyGate.register(req, res));
-    echo('AnnounceReset', { url: url(ResetPath) });
-
-    const ActivatePath = '/activate';
-    router.get(ActivatePath, (req, res) => SkyGate.activate(req, res));
-    echo('AnnounceActivate', { url: url(ActivatePath) });
+    endpoints.forEach(({ uri, handler, announce, method = 'get' }) => {
+      if (!['get','put','post','delete'].includes(method)) return;
+      router[method](uri, (req, res) => handler(req, res));
+      if (announce) echo(announce, { url: url(uri) });
+    });
 
     zaq.win(makeMessage('ServiceMounted', { url: url() }));
     return router;

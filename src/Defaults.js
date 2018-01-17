@@ -25,6 +25,12 @@ module.exports = {
     'resetToken',
     'activationToken'
   ],
+  paths: {
+    session: '/',
+    reset: '/reset',
+    activate: '/activate',
+    register: '/register'
+  },
   tests: {
     name: /^[a-zA-Z-. ]{1,256}$/,
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,

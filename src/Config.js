@@ -43,6 +43,13 @@ let Config = Object.assign({}, Defaults, {
       const { appName } = Config;
       zaq.warn(Lex.NoAppNameSet.split('%appName%').join(appName));
     };
+    if (typeof Config.activationLanding === 'undefined') {
+      const activationLanding = Config.getRoot() + Config.paths.session;
+      zaq.warn(Lex.NoLandingPageGiven.split('%activationLanding%').join(activationLanding));
+      Config.activationLanding = activationLanding;
+    }
+    // TODO: typechecking for regex and that all keys exist
+    // (tests.email, tests.name, paths.register, etc.)
   }
 });
 
