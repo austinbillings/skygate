@@ -26,7 +26,7 @@ const handleCrash = (payload) => {
 
 const handleDelivery = (payload) => {
   const { message, code } = payload;
-  zaq.win(message + chalk.dim(` (${code})`));
+  zaq.ok(message + chalk.dim(` (${code})`));
 };
 
 const notImplemented = (req, res) => {
@@ -53,7 +53,7 @@ const SkyGate = {
     mongoose.Promise = global.Promise;
 
     mongoose.connect(dbUri)
-      .then(() => zaq.win(makeMessage('MongoOk', { uri: chalk.reset.dim(cleanUri) })))
+      .then(() => zaq.ok(makeMessage('MongoOk', { uri: chalk.reset.dim(cleanUri) })))
       .catch(err => zaq.err(makeMessage('MongoFail', { uri: cleanUri }), err));
   },
 
@@ -207,7 +207,7 @@ const SkyGate = {
       if (announce) echo(announce, { url: url(uri) });
     });
 
-    zaq.win(makeMessage('ServiceMounted', { url: url() }));
+    zaq.ok(makeMessage('ServiceMounted', { url: url() }));
     return router;
   }
 };
