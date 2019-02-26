@@ -7,7 +7,7 @@ module.exports = {
   verbose: false,
   development: true,
   defaultFromAddress: null,
-
+  secretKey: require('crypto').randomBytes(32).toString('hex'),
   userModelName: 'skygate_user',
 
   maxAttempts: 10,
