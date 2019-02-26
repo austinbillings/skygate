@@ -9,11 +9,10 @@ module.exports = (Sessions) => {
   class Request {
     constructor (req, res) {
       if (!req || typeof req !== 'object')
-        trolley.crash(res, {
+        trolley.explode({
           message: Lex.NoRequest,
-          code: 500,
           obj: req
-        });
+        }, res);
 
       this.req = req;
       this.res = res;

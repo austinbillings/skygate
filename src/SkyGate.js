@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
-const Trolley = trolley();
+const Trolley = trolley.create();
 const Lex = require('./Lex');
 const Utils = require('./Utils');
 const Config = require('./Config');
@@ -21,16 +21,18 @@ const { makeMessage, appendMeta } = Utils;
 
 const handleCrash = (payload) => {
   const { message, code } = payload;
+
   zaq.err(message + chalk.dim(` (${code})`));
 };
 
 const handleDelivery = (payload) => {
   const { message, code } = payload;
+
   zaq.ok(message + chalk.dim(` (${code})`));
 };
 
 const notImplemented = (req, res) => {
-  return Trolley.crash(res, { code: 501, message: Lex.NotImplemented });
+  return Trolley.explode({ code: 501, message: Lex.NotImplemented }, res);
 };
 
 const SkyGate = {
@@ -43,7 +45,9 @@ const SkyGate = {
     SkyGate.connect();
     Trolley.onCrash(Config.verbose ? handleCrash : null);
     Trolley.onDeliver(Config.verbose ? handleDelivery : null);
-    zaq.use(new trolley().logger, { timestamps: true, stripColors: true });
+
+    zaq.use(trolley.createLogger({ logPath: './.skygate.log' }), { timestamps: true, stripColors: true });
+
     return SkyGate;
   },
 
@@ -63,23 +67,23 @@ const SkyGate = {
     if (requester.isLoggedIn()) {
       let message = requester.appendMeta(Lex.AlreadyLoggedIn);
       let code = 403;
-      return Trolley.crash(res, { message, code });
+      return Trolley.crash({ message, code }, res);
     }
 
     return SkyGate.Users.validateRegistration(req.body)
       .then(SkyGate.Users.registerUser)
       .then(SkyGate.Users.sendActivationEmail)
       .then((user) => {
-        Trolley.deliver(res, {
+        Trolley.deliver({
           code: 201,
           message: `Registered ${user.email}`,
           registered: true,
           activated: false
-        });
+      }, res);
       })
       .catch(err => {
         const { message } = err.message ? err : { message: err };
-        Trolley.crash(res, { message })
+        Trolley.crash({ message }, res)
       });
   },
 
@@ -92,7 +96,7 @@ const SkyGate = {
           .status(303)
           .end();
       })
-      .catch(message => Trolley.crash(res, { message }));
+      .catch(message => Trolley.crash({ message }, res));
   },
 
   login (req, res) {
@@ -101,18 +105,18 @@ const SkyGate = {
 
     if (requester.isLoggedIn()) {
       let message = requester.appendMeta(Lex.AlreadyLoggedIn);
-      return Trolley.deliver(res, { message, ip });
+      return Trolley.deliver({ message, ip }, res);
     }
     if (!requester.canAttemptLogin()) {
       requester.lockout();
       let message = requester.appendMeta(Lex.MaxAttemptsReached);
       let code = 429;
-      return Trolley.crash(res, { message, code, ip });
+      return Trolley.crash({ message, code, ip }, res);
     }
     requester.registerLoginAttempt();
     return SkyGate.Users.attemptLogin(req.body, Sessions.active)
       .then(user => Sessions.create(req, res, user))
-      .catch(message => Trolley.crash(res, { message, ip }));
+      .catch(message => Trolley.crash({ message, ip }, res));
   },
 
   logout (req, res) {
@@ -137,19 +141,19 @@ const SkyGate = {
     const requester = new Request(req);
     const token = requester.getToken();
 
-    if (!requester.isLoggedIn()) return Trolley.crash(res, {
+    if (!requester.isLoggedIn()) return Trolley.crash({
       message: requester.appendMeta(Lex.Unauthorized),
       obj: token,
       code: 401
-    });
+    }, res);
 
     if (next) return next();
 
-    else return Trolley.crash(res, {
+    else return Trolley.crash({
       code: 502,
       message: requester.appendMeta(Lex.BadGateway),
       obj: token
-    });
+    }, res);
   },
 
   mount () {
