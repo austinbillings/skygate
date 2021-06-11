@@ -16,7 +16,7 @@ const Sessions = {
     const request = new Request(req);
 
     const token = uid.v4();
-    const signed = false;
+    const signed = true;
     const ip = request.getIp();
     const user = Utils.vetUser(rawUser);
     const start = (new Date()).getTime();

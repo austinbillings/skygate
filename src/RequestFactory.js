@@ -28,10 +28,10 @@ module.exports = (Sessions) => {
     }
 
     getToken () {
-      const { cookies } = this.req;
+      const { signedCookies } = this.req;
       const { cookieName } = Config;
-      return (cookies && cookies[cookieName])
-        ? cookies[cookieName]
+      return (signedCookies && signedCookies[cookieName])
+        ? signedCookies[cookieName]
         : undefined;
     }
 
