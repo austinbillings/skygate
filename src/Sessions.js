@@ -16,7 +16,7 @@ const Sessions = {
     const request = new Request(req);
 
     const token = uid.v4();
-    const signed = false;
+    const signed = true;
     const ip = request.getIp();
     const user = Utils.vetUser(rawUser);
     const start = (new Date()).getTime();
@@ -31,7 +31,7 @@ const Sessions = {
     zaq.ok(makeMessage('SessionStarted', { token, ip }));
     zaq.log(Utils.sessionTable(Sessions.active));
 
-    res.cookie(cookieName, token, { maxAge, signed, secure: true, sameSite: 'none' });
+    res.cookie(cookieName, token, { maxAge, signed, secure: true, sameSite: 'Lax' });
     res.send(payload);
   },
 
