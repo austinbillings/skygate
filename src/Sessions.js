@@ -31,7 +31,7 @@ const Sessions = {
     zaq.ok(makeMessage('SessionStarted', { token, ip }));
     zaq.log(Utils.sessionTable(Sessions.active));
 
-    res.cookie(cookieName, token, { maxAge, signed });
+    res.cookie(cookieName, token, { maxAge, signed, secure: true, sameSite: 'none' });
     res.send(payload);
   },
 
