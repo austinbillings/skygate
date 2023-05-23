@@ -1,7 +1,25 @@
 # <strike>SkyGate</strike>
 
-*Now on V2 Development! It's super unstable haha!*
 
-<strike>SkyGate</strike> is simple, powerful authentication for Mongo/Express apps.
+## Dead-simple mongo and express-based plug'n'play authentication for Node servers
 
-For documentation of *l'original minimal*, see the v1 docs at `/docs/v1.md` (and don't forget to explicitly require the v1 tag!).
+It's as easy as:
+
+```
+const express = require('express');
+const skygate = require('../index');
+const settings = {
+  verbose: true,
+  endpoint: '/auth',
+  port: 12345,
+  userModelName: 'sg_test_user',
+  appName: 'Test App',
+  sendgridKey: process.env.RockLititzSendgridKey
+};
+
+const instance = skygate(settings);
+const app = express();
+
+app.use(instance.mount());
+app.listen(settings.port);
+```
